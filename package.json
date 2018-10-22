@@ -1,0 +1,22 @@
+{
+  "name": "@dlghq/dialog-spam-bot",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Dialog spam bot",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node lib/index.js",
+    "prebuild": "rm -rf lib/",
+    "build": "tsc"
+  },
+  "author": "Nikita Gusakov <gusnkt@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@dlghq/dialog-bot-sdk": "3.2.0",
+    "ms": "2.1.1"
+  },
+  "devDependencies": {
+    "@types/ms": "0.7.30",
+    "typescript": "3.1.3"
+  }
+}
