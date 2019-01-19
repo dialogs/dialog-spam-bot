@@ -1,12 +1,16 @@
 FROM node:10.15-alpine
 
-ENV NODE_ENV production
-
 WORKDIR /opt/dialog-spam-bot
 
-COPY lib lib
+COPY src src
 COPY package.json package.json
+COPY tsconfig.json tsconfig.json
+COPY package-lock.json package-lock.json
 
-RUN npm install
+RUN npm install \
+ && npm run build \
+ && npm install --production \
+ && rm -rf node_modules src tsconfig.json package-lock.json
 
-ENTRYPOINT ["node", "lib/index.js"]
+ENV NODE_ENV production
+ENTRYPOINT ["npm", "start"]
