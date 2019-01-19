@@ -9,8 +9,9 @@ COPY package-lock.json package-lock.json
 
 RUN npm install \
  && npm run build \
+ && rm -rf node_modules \
  && npm install --production \
- && rm -rf node_modules src tsconfig.json package-lock.json
+ && rm -rf src tsconfig.json package-lock.json
 
 ENV NODE_ENV production
 ENTRYPOINT ["npm", "start"]
