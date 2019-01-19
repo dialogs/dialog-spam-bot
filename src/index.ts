@@ -13,11 +13,13 @@ const bot = new Bot(config);
 
 const help = `
 Hello. Here is control commands:
-  start [delay] [count]
-    [delay] Spam interval (500ms/1sec/10min).
-    [times] Stop automaticly after [count] times.
+\`\`\`
+/start [delay] [count]
+  [delay] Spam interval (500ms/1sec/10min).
+  [times] Stop automaticly after [count] times.
 
-  stop
+/stop
+\`\`\`
 `.trim();
 
 const context = new PeerMap<Subscription>();
@@ -30,7 +32,7 @@ bot
     }
 
     const state = context.get(message.peer);
-    const matches = message.content.text.match(/start(?: (\d+(?:ms|sec|min)))?(?: (\d+))?/i);
+    const matches = message.content.text.match(/^\/start(?: (\d+(?:ms|sec|min)))?(?: (\d+))?$/i);
     if (matches) {
       if (state) {
         return;
@@ -39,7 +41,7 @@ bot
       const delay = ms(matches[1] || '500ms');
       const times = parseInt(matches[2], 10) || 100;
 
-      await bot.sendText(message.peer, `Start posting ${times} messages with ${ms(delay)} interval.`);
+      await bot.sendText(message.peer, `Start posting ${times} messages with ${ms(delay)} interval. Stop me using \`/stop\` command.`);
 
       const task = interval(delay)
         .pipe(
@@ -58,11 +60,11 @@ bot
       return;
     }
 
-    if (message.content.text === 'stop') {
+    if (message.content.text === '/stop') {
       if (state) {
         state.unsubscribe();
         context.delete(message.peer);
-        await bot.sendText(message.peer, 'Stop posing.');
+        await bot.sendText(message.peer, 'Stop posting.');
         return;
       }
     }
