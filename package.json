@@ -1,7 +1,7 @@
 {
   "name": "@dlghq/dialog-spam-bot",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dialog spam bot",
   "main": "src/index.js",
   "scripts": {
