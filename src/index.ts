@@ -25,7 +25,8 @@ Hello. Here is control commands:
 const context = new PeerMap<Subscription>();
 
 bot
-  .onMessage(async (message) => {
+  .subscribeToMessages()
+  .pipe(flatMap(async (message) => {
     if (message.content.type !== 'text') {
       await bot.sendText(message.peer, help);
       return;
@@ -70,9 +71,10 @@ bot
     }
 
     await bot.sendText(message.peer, help);
-  })
-  .toPromise()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
+  }))
+  .subscribe({
+    error: (error) => {
+      console.error(error);
+      process.exit(1);
+    }
+  });
