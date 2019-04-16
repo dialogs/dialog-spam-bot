@@ -1,0 +1,55 @@
+version: 2
+
+jobs:
+  build-app:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package-lock.json" }}
+      - run: npm test
+      - run: npm run build
+      - persist_to_workspace:
+          root: lib
+          paths: ["*"]
+
+  build-docker:
+    docker:
+      - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: lib
+      - run: docker build . -t "${CIRCLE_PROJECT_REPONAME}" -t "${CIRCLE_PROJECT_REPONAME}:${CIRCLE_BUILD_NUM}"
+      - run: docker push "${CIRCLE_PROJECT_REPONAME}"
+
+  deploy:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build-app
+      - build-docker:
+          requires:
+            - build-app
+      - deploy:
+          requires:
+            - build-docker
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
