@@ -2,35 +2,36 @@
  * Copyright 2018 Dialog LLC <info@dlg.im>
  */
 
-const defaultEndpoints = [
-  'https://grpc-test.transmit.im:9443'
-];
+const envSchema = require('env-schema');
 
-function parseToken() {
-  const token = process.env.BOT_TOKEN;
-  if (!token) {
-    throw new Error('BOT_TOKEN env required');
+const env = envSchema({
+  dotenv: true,
+  schema: {
+    type: 'object',
+    required: ['BOT_TOKEN'],
+    properties: {
+      BOT_TOKEN: {
+        type: 'string'
+      },
+      BOT_ENDPOINT: {
+        type: 'string'
+      }
+    }
   }
+});
 
-  return token;
-}
+type Config = {
+  token: string;
+  endpoints: Array<string>;
+  loggerOptions: Object;
+};
 
-function parseEndpoints() {
-  const raw = (process.env.BOT_ENDPOINT || process.env.BOT_ENDPOINTS) || '';
-  const endpoints = raw.split(' ').map((url) => url.trim()).filter((url) => url.length);
-
-  if (endpoints.length) {
-    return endpoints;
+const config: Config = {
+  token: env.BOT_TOKEN,
+  endpoints: [env.BOT_ENDPOINT],
+  loggerOptions: {
+    level: 'trace'
   }
-
-  console.warn(`Using default endpoints: ${defaultEndpoints.join(', ')}`);
-
-  return defaultEndpoints;
-}
-
-const config = {
-  token: parseToken(),
-  endpoints: parseEndpoints()
 };
 
 export default config;

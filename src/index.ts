@@ -4,7 +4,7 @@
 
 import ms from 'ms';
 import { interval, Subscription } from 'rxjs';
-import { take, flatMap } from 'rxjs/operators';
+import { take, flatMap, finalize } from 'rxjs/operators';
 import Bot, { PeerMap } from '@dlghq/dialog-bot-sdk';
 import config from './config';
 import text from './onegin.json';
@@ -26,55 +26,64 @@ const context = new PeerMap<Subscription>();
 
 bot
   .subscribeToMessages()
-  .pipe(flatMap(async (message) => {
-    if (message.content.type !== 'text') {
+  .pipe(
+    flatMap(async (message) => {
+      if (message.content.type !== 'text') {
+        await bot.sendText(message.peer, help);
+        return;
+      }
+
+      const state = context.get(message.peer);
+      const matches = message.content.text.match(
+        /^\/start(?: (\d+(?:ms|sec|min)))?(?: (\d+))?$/i
+      );
+      if (matches) {
+        if (state) {
+          return;
+        }
+
+        const delay = ms(matches[1] || '500ms');
+        const times = parseInt(matches[2], 10) || 100;
+
+        await bot.sendText(
+          message.peer,
+          `Start posting ${times} messages with ${ms(
+            delay
+          )} interval. Stop me using \`/stop\` command.`
+        );
+
+        const task = interval(delay)
+          .pipe(
+            take(times),
+            flatMap(async (i) => {
+              const line = text[i % text.length];
+              await bot.sendText(message.peer, line);
+            }),
+            finalize(() => context.delete(message.peer))
+          )
+          .subscribe({
+            error: (error) => bot.logger.error(error)
+          });
+
+        context.set(message.peer, task);
+        return;
+      }
+
+      if (message.content.text === '/stop') {
+        if (state) {
+          state.unsubscribe();
+          context.delete(message.peer);
+          await bot.sendText(message.peer, 'Stop posting.');
+          return;
+        }
+      }
+
       await bot.sendText(message.peer, help);
-      return;
-    }
-
-    const state = context.get(message.peer);
-    const matches = message.content.text.match(/^\/start(?: (\d+(?:ms|sec|min)))?(?: (\d+))?$/i);
-    if (matches) {
-      if (state) {
-        return;
-      }
-
-      const delay = ms(matches[1] || '500ms');
-      const times = parseInt(matches[2], 10) || 100;
-
-      await bot.sendText(message.peer, `Start posting ${times} messages with ${ms(delay)} interval. Stop me using \`/stop\` command.`);
-
-      const task = interval(delay)
-        .pipe(
-          take(times),
-          flatMap(async (i) => {
-            const line = text[i % text.length];
-            await bot.sendText(message.peer, line);
-          })
-        )
-        .subscribe({
-          error: (error) => console.error(error),
-          complete: () => context.delete(message.peer)
-        });
-
-      context.set(message.peer, task);
-      return;
-    }
-
-    if (message.content.text === '/stop') {
-      if (state) {
-        state.unsubscribe();
-        context.delete(message.peer);
-        await bot.sendText(message.peer, 'Stop posting.');
-        return;
-      }
-    }
-
-    await bot.sendText(message.peer, help);
-  }))
+    })
+  )
   .subscribe({
     error: (error) => {
-      console.error(error);
+      bot.logger.error(error);
       process.exit(1);
     }
   });

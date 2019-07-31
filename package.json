@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "exit 0",
-    "start": "node lib/index.js",
+    "start": "ts-node src/index.ts",
     "prebuild": "rm -rf lib/",
     "build": "tsc",
     "postversion": "git push --follow-tags"
@@ -14,11 +14,13 @@
   "author": "Nikita Gusakov <gusnkt@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@dlghq/dialog-bot-sdk": "4.0.0",
-    "ms": "2.1.1"
+    "@dlghq/dialog-bot-sdk": "4.2.1",
+    "env-schema": "1.0.0",
+    "ms": "2.1.2"
   },
   "devDependencies": {
     "@types/ms": "0.7.30",
-    "typescript": "3.4.3"
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
   }
 }
