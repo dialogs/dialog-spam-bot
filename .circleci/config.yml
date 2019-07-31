@@ -9,7 +9,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package-lock.json" }}
-      - run: npm install
+      - run: npm ci
       - save_cache:
           paths:
             - node_modules
@@ -18,7 +18,7 @@ jobs:
       - run: npm run build
       - persist_to_workspace:
           root: lib
-          paths: ["*"]
+          paths: ['*']
 
   build-docker:
     docker:
