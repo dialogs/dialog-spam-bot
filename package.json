@@ -14,7 +14,7 @@
   "author": "Nikita Gusakov <gusnkt@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@dlghq/dialog-bot-sdk": "4.2.1",
+    "@dlghq/dialog-bot-sdk": "4.2.3",
     "env-schema": "1.0.0",
     "ms": "2.1.2"
   },
