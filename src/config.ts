@@ -8,13 +8,17 @@ const env = envSchema({
   dotenv: true,
   schema: {
     type: 'object',
-    required: ['BOT_TOKEN'],
+    required: ['BOT_TOKEN', 'BOT_ENDPOINT'],
     properties: {
       BOT_TOKEN: {
         type: 'string'
       },
       BOT_ENDPOINT: {
         type: 'string'
+      },
+      LOG_LEVEL: {
+        type: 'string',
+        default: 'info'
       }
     }
   }
@@ -30,7 +34,7 @@ const config: Config = {
   token: env.BOT_TOKEN,
   endpoints: [env.BOT_ENDPOINT],
   loggerOptions: {
-    level: 'trace'
+    level: env.LOG_LEVEL
   }
 };
 
